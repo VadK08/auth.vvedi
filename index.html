@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Vvedi — Панель управления</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Telegram WebApp -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+    <!-- Стили -->
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<div class="background-glow"></div>
+
+<h1 style="text-align:center; margin-top:40px;">Панель управления</h1>
+<p class="subtitle">Настройте, что будет публиковать ваш бот</p>
+
+<!-- Основной контейнер -->
+<div class="section">
+
+    <!-- ТЕМА -->
+    <div class="card">
+        <h3>Тема постов</h3>
+        <input id="topic" type="text" placeholder="Например: новости технологий, крипта, искусственный интеллект...">
+    </div>
+
+    <!-- ОПЦИИ -->
+    <div class="card">
+        <h3>Дополнительные настройки</h3>
+        <label><input id="genimg" type="checkbox"> Генерировать изображения к постам</label><br><br>
+        <label><input id="usenews" type="checkbox"> Добавлять актуальные новости</label>
+    </div>
+
+    <!-- РЕКЛАМА -->
+    <div class="card">
+        <h3>Реклама</h3>
+        <input id="adtitle" type="text" placeholder="Название вашего продукта">
+        <textarea id="addesc" placeholder="Короткое описание"></textarea>
+    </div>
+
+    <!-- ВРЕМЯ -->
+    <div class="card">
+        <h3>Расписание публикаций</h3>
+        <input id="times" type="text" placeholder="Например: 10:00, 16:30, 21:00">
+    </div>
+
+    <button id="saveBtn">Сохранить</button>
+
+</div>
+
+<script>
+// Telegram WebApp API
+const tg = window.Telegram.WebApp;
+tg.expand();
+
+// Проверяем наличие данных Telegram
+const user = tg.initDataUnsafe?.user;
+
+if (!user) {
+    document.body.innerHTML = "<h2 style='text-align:center;margin-top:80px;'>❌ Откройте эту страницу через Telegram</h2>";
+} else {
+    console.log("User loaded:", user);
+}
+
+// Backend API URL (локально → потом заменим на Pi / Tunnel)
+const API = "http://127.0.0.1:8000";
+
+// Функция получения заголовков авторизации
+function authHeader() {
+    return {
+        "Authorization": "Bearer " + localStorage.getItem("session")
+    };
+}
+
+// Проверяем авторизацию
+fetch(API + "/login_from_webapp", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({
+        id: user.id,
+        username: user.username || null,
+        first_name: user.first_name
+    })
+})
+.then(r => r.json())
+.then(res => {
+    if (!res.session) {
+        alert("Ошибка авторизации: " + JSON.stringify(res));
+        return;
+    }
+
+    localStorage.setItem("session", res.session);
+    loadSettings();
+});
+
+// Загружаем настройки из backend
+function loadSettings() {
+    fetch(API + "/settings", { headers: authHeader() })
+        .then(r => r.json())
+        .then(data => {
+            document.getElementById("topic").value = data.topic || "";
+            document.getElementById("genimg").checked = data.generate_image || false;
+            document.getElementById("usenews").checked = data.use_news || false;
+            document.getElementById("adtitle").value = data.ad_title || "";
+            document.getElementById("addesc").value = data.ad_description || "";
+            document.getElementById("times").value = (data.post_times || []).join(", ");
+        });
+}
+
+// Сохранение настроек
+document.getElementById("saveBtn").onclick = () => {
+    const body = {
+        topic: document.getElementById("topic").value,
+        generate_image: document.getElementById("genimg").checked,
+        use_news: document.getElementById("usenews").checked,
+        ad_title: document.getElementById("adtitle").value,
+        ad_description: document.getElementById("addesc").value,
+        post_times: document.getElementById("times").value
+            .split(",")
+            .map(x => x.trim())
+            .filter(Boolean)
+    };
+
+    fetch(API + "/settings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...authHeader() },
+        body: JSON.stringify(body)
+    })
+    .then(r => r.json())
+    .then(() => tg.showAlert("Настройки сохранены!"));
+};
+</script>
+
+</body>
+</html>
