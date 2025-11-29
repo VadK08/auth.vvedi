@@ -1,1 +1,91 @@
+body {
+    margin: 0;
+    background: #0d0f14;
+    background: radial-gradient(circle at 20% 0%, #1c1f26, #0b0d10 70%);
+    color: #ffffff;
+    font-family: -apple-system, Inter, sans-serif;
+    overflow-x: hidden;
+}
 
+.background-glow {
+    position: fixed;
+    width: 900px;
+    height: 900px;
+    background: radial-gradient(circle, rgba(80,110,255,0.3), transparent 70%);
+    top: -250px;
+    left: -250px;
+    filter: blur(120px);
+    z-index: -1;
+}
+
+.section {
+    max-width: 760px;
+    margin: 40px auto;
+    padding: 0 20px;
+}
+
+.card {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 18px;
+    backdrop-filter: blur(12px);
+    padding: 24px 28px;
+    box-shadow: 0 14px 40px rgba(0,0,0,0.35);
+    transition: 0.25s ease;
+}
+.card:hover {
+    background: rgba(255,255,255,0.06);
+}
+
+h1 {
+    text-align: center;
+    font-size: 40px;
+    margin-top: 40px;
+}
+
+.subtitle {
+    text-align: center;
+    opacity: 0.7;
+    margin-bottom: 40px;
+}
+
+input, textarea {
+    width: 100%;
+    padding: 14px;
+    margin-top: 10px;
+    border-radius: 12px;
+    background: rgba(255,255,255,0.08);
+    border: none;
+    color: #fff;
+    font-size: 16px;
+}
+
+button, .cta {
+    margin-top: 20px;
+    width: 100%;
+    padding: 16px;
+    font-size: 18px;
+    font-weight: 600;
+    border-radius: 16px;
+    background: linear-gradient(135deg, #4f6aff, #2941ff);
+    color: white;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 8px 25px rgba(50,70,255,0.4);
+    transition: 0.2s;
+}
+button:hover, .cta:hover {
+    filter: brightness(1.2);
+}
+
+@media (max-width: 600px) {
+    .background-glow {
+        display: none !important;
+    }
+    body {
+        background: #0e1014 !important;
+    }
+    .card {
+        backdrop-filter: none !important;
+    }
+}
