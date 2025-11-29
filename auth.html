@@ -1,1 +1,53 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Vvedi — Авторизация</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
 
+<div class="background-glow"></div>
+
+<h1>Авторизация</h1>
+<p class="subtitle">Проверяем данные Telegram...</p>
+
+<div class="section">
+    <div class="card">
+        <p>Пожалуйста, подождите. Выполняем вход...</p>
+    </div>
+</div>
+
+<script>
+    const tg = window.Telegram.WebApp;
+    tg.expand();
+
+    const user = tg.initDataUnsafe?.user;
+
+    if (!user) {
+        document.body.innerHTML = "<h2 style='text-align:center;margin-top:80px;'>❌ Откройте через Telegram</h2>";
+    } else {
+        fetch("http://127.0.0.1:8000/login_from_webapp", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({
+                id: user.id,
+                username: user.username || null,
+                first_name: user.first_name
+            })
+        })
+        .then(r => r.json())
+        .then(res => {
+            if (res.session) {
+                localStorage.setItem("session", res.session);
+                window.location.href = "panel.html";
+            } else {
+                alert("Ошибка входа: " + JSON.stringify(res));
+            }
+        });
+    }
+</script>
+
+</body>
+</html>
